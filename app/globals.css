@@ -1,26 +1,236 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fbff;
+  --foreground: #111827;
+  --surface: rgba(255, 255, 255, 0.94);
+  --surface-strong: rgba(255, 255, 255, 0.985);
+  --line: rgba(15, 23, 42, 0.08);
+  --line-strong: rgba(16, 45, 92, 0.18);
+  --primary: #14396f;
+  --primary-strong: #0d264d;
+  --primary-soft: #dfe9fb;
+  --accent: #cbb58f;
+  --accent-soft: #f6efe4;
+  --muted: #64748b;
+  --shadow: 0 24px 70px rgba(13, 38, 77, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(20, 57, 111, 0.12), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(203, 181, 143, 0.16), transparent 24%),
+    linear-gradient(180deg, #fbfdff 0%, #f4f8ff 45%, #ffffff 100%);
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: transparent;
+  font-family: var(--font-sans);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.page-shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.panel-strong {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.995) 0%, rgba(248, 251, 255, 0.99) 100%);
+  border: 1px solid rgba(20, 57, 111, 0.12);
+  border-radius: 32px;
+  box-shadow: 0 28px 80px rgba(13, 38, 77, 0.1);
+}
+
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(203, 181, 143, 0.18), transparent 24%),
+    linear-gradient(135deg, rgba(9, 27, 56, 0.98) 0%, rgba(15, 44, 88, 0.98) 54%, rgba(24, 67, 128, 0.9) 100%);
+  color: #f8fbff;
+  border-radius: 36px;
+  box-shadow: 0 30px 100px rgba(9, 27, 56, 0.24);
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: -22% auto auto -8%;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, transparent 72%);
+}
+
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -15% -35% auto;
+  width: 360px;
+  height: 360px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(203, 181, 143, 0.24) 0%, transparent 72%);
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 86%);
+}
+
+.hero-metric {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-radius: 24px;
+  padding: 1rem 1.1rem;
+  backdrop-filter: blur(14px);
+}
+
+.hero-kicker {
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(241, 245, 249, 0.84);
+}
+
+.section-title {
+  font-size: clamp(1.55rem, 2vw, 2.15rem);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.78rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(241, 245, 249, 0.88);
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.15rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(203, 181, 143, 0.15);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 14px 30px rgba(13, 38, 77, 0.18);
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(13, 38, 77, 0.22);
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 1.05rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(20, 57, 111, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary-strong);
+  font-weight: 600;
+}
+
+.secondary-button:hover,
+.text-link:hover {
+  border-color: rgba(20, 57, 111, 0.28);
+  color: var(--primary);
+}
+
+.text-link {
+  color: var(--primary-strong);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.label-text {
+  margin-bottom: 0.45rem;
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #27405f;
+}
+
+.field,
+.select-field,
+.textarea-field {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(20, 57, 111, 0.14);
+  background: rgba(255, 255, 255, 0.99);
+  padding: 0.9rem 1rem;
+  color: var(--foreground);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.field:focus,
+.select-field:focus,
+.textarea-field:focus {
+  outline: none;
+  border-color: rgba(20, 57, 111, 0.42);
+  box-shadow:
+    0 0 0 4px rgba(20, 57, 111, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.surface-grid {
+  background-image:
+    linear-gradient(rgba(20, 57, 111, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 57, 111, 0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
 }

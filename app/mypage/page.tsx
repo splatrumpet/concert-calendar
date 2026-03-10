@@ -18,22 +18,30 @@ export default async function MyPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">マイページ</h1>
+    <main className="space-y-7 md:space-y-8">
+      <section className="panel-strong p-6 md:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">
+          Private Collection
+        </p>
+        <h1 className="section-title mt-2">マイページ</h1>
+        <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base">
+          投稿した演奏会を一覧で見渡し、そのまま編集や削除へ進めます。
+        </p>
+      </section>
 
-      <div className="space-y-4">
+      <div className="space-y-4 md:space-y-5">
         {concerts?.map((concert) => (
           <ConcertCard
             key={concert.id}
             concert={concert}
             actions={
               <>
-                <Link href={`/concerts/${concert.id}/edit`} className="underline">
+                <Link href={`/concerts/${concert.id}/edit`} className="text-link">
                   編集
                 </Link>
                 <form action={deleteConcertAction}>
                   <input type="hidden" name="id" value={concert.id} />
-                  <button type="submit" className="underline">
+                  <button type="submit" className="text-link">
                     削除
                   </button>
                 </form>

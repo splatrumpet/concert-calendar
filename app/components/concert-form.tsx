@@ -2,9 +2,9 @@
 
 import { useActionState, useState } from 'react'
 import type { ConcertFormState } from '@/app/actions/concerts'
+import AlertMessage from '@/app/components/alert-message'
 import { PREFECTURES } from '@/lib/prefectures'
 import type { ConcertFormAction, ConcertFormValues, ProgramInput } from '@/types/concert'
-import AlertMessage from '@/app/components/alert-message'
 
 type Props = {
   action: ConcertFormAction
@@ -38,10 +38,7 @@ export default function ConcertForm({
   const [programs, setPrograms] = useState<ProgramInput[]>(normalizePrograms(initialValues?.programs))
 
   const addProgram = () => {
-    setPrograms((current) => [
-      ...current,
-      { title: '', composer: '', order_no: current.length + 1 },
-    ])
+    setPrograms((current) => [...current, { title: '', composer: '', order_no: current.length + 1 }])
   }
 
   const removeProgram = (index: number) => {
@@ -61,153 +58,154 @@ export default function ConcertForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="panel-strong space-y-7 p-6 md:space-y-8 md:p-9">
       {initialValues?.id && <input type="hidden" name="id" value={initialValues.id} />}
       {state.error && <AlertMessage>{state.error}</AlertMessage>}
 
-      <div>
-        <label className="mb-1 block">演奏会名</label>
-        <input
-          name="title"
-          defaultValue={initialValues?.title ?? ''}
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
+      <div className="grid gap-5 md:grid-cols-2 md:gap-6">
+        <div className="md:col-span-2">
+          <label className="label-text">演奏会名</label>
+          <input name="title" defaultValue={initialValues?.title ?? ''} required className="field" />
+        </div>
 
-      <div>
-        <label className="mb-1 block">開催日</label>
-        <input
-          name="event_date"
-          type="date"
-          defaultValue={initialValues?.event_date ?? ''}
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
+        <div>
+          <label className="label-text">開催日</label>
+          <input
+            name="event_date"
+            type="date"
+            defaultValue={initialValues?.event_date ?? ''}
+            required
+            className="field"
+          />
+        </div>
 
-      <div>
-        <label className="mb-1 block">開演時間</label>
-        <input
-          name="start_time"
-          type="time"
-          defaultValue={initialValues?.start_time ?? ''}
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
+        <div>
+          <label className="label-text">開演時間</label>
+          <input
+            name="start_time"
+            type="time"
+            defaultValue={initialValues?.start_time ?? ''}
+            required
+            className="field"
+          />
+        </div>
 
-      <div>
-        <label className="mb-1 block">都道府県</label>
-        <select
-          name="prefecture"
-          required
-          defaultValue={initialValues?.prefecture ?? ''}
-          className="w-full rounded border px-3 py-2"
-        >
-          <option value="" disabled>
-            都道府県を選択
-          </option>
-          {PREFECTURES.map((prefecture) => (
-            <option key={prefecture} value={prefecture}>
-              {prefecture}
+        <div>
+          <label className="label-text">都道府県</label>
+          <select
+            name="prefecture"
+            required
+            defaultValue={initialValues?.prefecture ?? ''}
+            className="select-field"
+          >
+            <option value="" disabled>
+              都道府県を選択
             </option>
-          ))}
-        </select>
+            {PREFECTURES.map((prefecture) => (
+              <option key={prefecture} value={prefecture}>
+                {prefecture}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="label-text">会場</label>
+          <input name="venue" defaultValue={initialValues?.venue ?? ''} required className="field" />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="label-text">主催者名</label>
+          <input
+            name="organization_name"
+            defaultValue={initialValues?.organization_name ?? ''}
+            required
+            className="field"
+          />
+        </div>
+
+        <div>
+          <label className="label-text">公式URL</label>
+          <input
+            name="official_url"
+            type="url"
+            defaultValue={initialValues?.official_url ?? ''}
+            className="field"
+          />
+        </div>
+
+        <div>
+          <label className="label-text">チラシ画像URL</label>
+          <input
+            name="flyer_image_url"
+            type="url"
+            defaultValue={initialValues?.flyer_image_url ?? ''}
+            className="field"
+          />
+        </div>
       </div>
 
       <div>
-        <label className="mb-1 block">会場</label>
-        <input
-          name="venue"
-          defaultValue={initialValues?.venue ?? ''}
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block">主催者名</label>
-        <input
-          name="organization_name"
-          defaultValue={initialValues?.organization_name ?? ''}
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block">公式URL</label>
-        <input
-          name="official_url"
-          type="url"
-          defaultValue={initialValues?.official_url ?? ''}
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block">チラシ画像URL</label>
-        <input
-          name="flyer_image_url"
-          type="url"
-          defaultValue={initialValues?.flyer_image_url ?? ''}
-          className="w-full rounded border px-3 py-2"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block">備考</label>
+        <label className="label-text">備考</label>
         <textarea
           name="note"
           defaultValue={initialValues?.note ?? ''}
-          className="w-full rounded border px-3 py-2"
-          rows={4}
+          className="textarea-field min-h-36"
+          rows={5}
         />
       </div>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">曲目</h2>
+      <section className="space-y-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">Program</p>
+            <h2 className="section-title mt-2 text-[var(--primary-strong)]">プログラム</h2>
+          </div>
+          <button type="button" onClick={addProgram} className="secondary-button">
+            曲目を追加
+          </button>
+        </div>
+
         {programs.map((program, index) => (
-          <div key={index} className="space-y-3 rounded border p-4">
-            <div>
-              <label className="mb-1 block">曲名</label>
-              <input
-                value={program.title}
-                onChange={(event) => updateProgram(index, 'title', event.target.value)}
-                className="w-full rounded border px-3 py-2"
-              />
+          <div key={index} className="rounded-3xl border border-[var(--line)] bg-white/88 p-5 md:p-6">
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--accent)]">
+              Program {index + 1}
             </div>
 
-            <div>
-              <label className="mb-1 block">作曲者</label>
-              <input
-                value={program.composer ?? ''}
-                onChange={(event) => updateProgram(index, 'composer', event.target.value)}
-                className="w-full rounded border px-3 py-2"
-              />
-            </div>
+            <div className="grid gap-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
+              <div>
+                <label className="label-text">曲名</label>
+                <input
+                  value={program.title}
+                  onChange={(event) => updateProgram(index, 'title', event.target.value)}
+                  className="field"
+                />
+              </div>
 
-            <button type="button" onClick={() => removeProgram(index)} className="rounded border px-3 py-1">
-              曲目を削除
-            </button>
+              <div>
+                <label className="label-text">作曲者</label>
+                <input
+                  value={program.composer ?? ''}
+                  onChange={(event) => updateProgram(index, 'composer', event.target.value)}
+                  className="field"
+                />
+              </div>
+
+              <button type="button" onClick={() => removeProgram(index)} className="secondary-button">
+                削除
+              </button>
+            </div>
           </div>
         ))}
-
-        <button type="button" onClick={addProgram} className="rounded border px-4 py-2">
-          曲目を追加
-        </button>
       </section>
 
       <input type="hidden" name="programs" value={JSON.stringify(programs)} readOnly />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded border bg-slate-900 px-4 py-2 text-white disabled:opacity-60"
-      >
-        {isPending ? pendingLabel : submitLabel}
-      </button>
+      <div className="flex justify-end pt-2">
+        <button type="submit" disabled={isPending} className="primary-button min-w-44 disabled:opacity-60">
+          {isPending ? pendingLabel : submitLabel}
+        </button>
+      </div>
     </form>
   )
 }

@@ -6,7 +6,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Concert Calendar',
-  description: 'オーケストラ演奏会の共有・検索アプリ',
+  description: 'オーケストラ演奏会を上品に探し、記録するためのカレンダーアプリ',
 }
 
 export default async function RootLayout({
@@ -18,43 +18,52 @@ export default async function RootLayout({
 
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <header className="border-b bg-white">
-          <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
-            <Link href="/" className="text-lg font-semibold">
-              Concert Calendar
-            </Link>
-            <nav className="flex items-center gap-3 text-sm">
-              <Link href="/concerts" className="underline">
-                一覧
-              </Link>
-              <Link href="/concerts/calendar" className="underline">
-                カレンダー
-              </Link>
-              {user ? (
-                <>
-                  <Link href="/concerts/new" className="underline">
-                    投稿
-                  </Link>
-                  <Link href="/mypage" className="underline">
-                    マイページ
-                  </Link>
-                  <SignOutButton />
-                </>
-              ) : (
-                <>
-                  <Link href="/login" className="underline">
-                    ログイン
-                  </Link>
-                  <Link href="/signup" className="underline">
-                    新規登録
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-        </header>
-        {children}
+      <body className="text-slate-900 antialiased">
+        <div className="page-shell px-0 py-4 md:py-6">
+          <header className="panel-strong mb-8 overflow-hidden">
+            <div className="flex flex-col gap-5 px-5 py-5 md:flex-row md:items-center md:justify-between md:px-8">
+              <div>
+                <Link href="/" className="text-2xl font-bold tracking-[-0.05em] text-[var(--primary-strong)]">
+                  Concert Calendar
+                </Link>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">
+                  静かな白の余白で、演奏会の情報を美しく見渡すためのカレンダー。
+                </p>
+              </div>
+
+              <nav className="flex flex-wrap items-center gap-2 text-sm md:justify-end">
+                <Link href="/concerts" className="secondary-button">
+                  一覧
+                </Link>
+                <Link href="/concerts/calendar" className="secondary-button">
+                  カレンダー
+                </Link>
+                {user ? (
+                  <>
+                    <Link href="/concerts/new" className="primary-button">
+                      投稿する
+                    </Link>
+                    <Link href="/mypage" className="secondary-button">
+                      マイページ
+                    </Link>
+                    <SignOutButton />
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" className="secondary-button">
+                      ログイン
+                    </Link>
+                    <Link href="/signup" className="primary-button">
+                      新規登録
+                    </Link>
+                  </>
+                )}
+              </nav>
+            </div>
+          </header>
+
+          <div className="pb-10">{children}</div>
+        </div>
       </body>
     </html>
   )

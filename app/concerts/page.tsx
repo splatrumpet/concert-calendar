@@ -25,10 +25,17 @@ export default async function ConcertListPage({ searchParams }: Props) {
 
   if (program && concertIds?.length === 0) {
     return (
-      <main className="mx-auto max-w-5xl space-y-6 p-6">
-        <h1 className="text-2xl font-bold">演奏会一覧</h1>
-        <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
-        <p>該当する演奏会はありませんでした。</p>
+      <main className="space-y-7">
+        <section className="panel-strong p-6 md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">Concerts</p>
+          <h1 className="section-title mt-2">演奏会一覧</h1>
+          <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base">
+            ご指定の条件に合う演奏会は見つかりませんでした。検索条件を少し広げてお試しください。
+          </p>
+        </section>
+        <section className="panel p-6 md:p-8">
+          <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
+        </section>
       </main>
     )
   }
@@ -58,15 +65,24 @@ export default async function ConcertListPage({ searchParams }: Props) {
   }
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">演奏会一覧</h1>
-      <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
+    <main className="space-y-7 md:space-y-8">
+      <section className="panel-strong p-6 md:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">Concerts</p>
+        <h1 className="section-title mt-2">演奏会一覧</h1>
+        <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base">
+          開催日、都道府県、曲目から演奏会を横断して探せます。
+        </p>
+      </section>
 
-      <div className="space-y-4">
+      <section className="panel p-6 md:p-8">
+        <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
+      </section>
+
+      <section className="space-y-4 md:space-y-5">
         {concerts?.map((concert) => (
           <ConcertCard key={concert.id} concert={concert} />
         ))}
-      </div>
+      </section>
     </main>
   )
 }
