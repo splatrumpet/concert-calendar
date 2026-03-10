@@ -1,22 +1,15 @@
-﻿import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import { deleteConcertAction } from '@/app/actions/concerts'
+import ConcertCard from '@/app/components/concert-card'
+import { requireUser } from '@/lib/auth'
+import { CONCERT_LIST_SELECT } from '@/lib/concerts'
 
 export default async function MyPage() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  const { supabase, user } = await requireUser()
 
   const { data: concerts, error } = await supabase
     .from('concerts')
-    .select('id,title,event_date,start_time,prefecture,venue,organization_name')
+    .select(CONCERT_LIST_SELECT)
     .eq('created_by', user.id)
     .order('event_date', { ascending: true })
 
@@ -30,26 +23,23 @@ export default async function MyPage() {
 
       <div className="space-y-4">
         {concerts?.map((concert) => (
-          <article key={concert.id} className="rounded border bg-white p-4">
-            <h2 className="text-xl font-semibold">{concert.title}</h2>
-            <p>{concert.event_date} {concert.start_time}</p>
-            <p>{concert.prefecture} / {concert.venue}</p>
-            <p>{concert.organization_name}</p>
-            <div className="mt-3 flex gap-3">
-              <Link href={`/concerts/${concert.id}`} className="underline">
-                詳細
-              </Link>
-              <Link href={`/concerts/${concert.id}/edit`} className="underline">
-                編集
-              </Link>
-              <form action={deleteConcertAction}>
-                <input type="hidden" name="id" value={concert.id} />
-                <button type="submit" className="underline">
-                  削除
-                </button>
-              </form>
-            </div>
-          </article>
+          <ConcertCard
+            key={concert.id}
+            concert={concert}
+            actions={
+              <>
+                <Link href={`/concerts/${concert.id}/edit`} className="underline">
+                  編集
+                </Link>
+                <form action={deleteConcertAction}>
+                  <input type="hidden" name="id" value={concert.id} />
+                  <button type="submit" className="underline">
+                    削除
+                  </button>
+                </form>
+              </>
+            }
+          />
         ))}
       </div>
     </main>

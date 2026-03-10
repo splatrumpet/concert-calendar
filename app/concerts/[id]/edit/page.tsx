@@ -1,6 +1,7 @@
-﻿import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
 import ConcertEditForm from './ui'
+import { requireUser } from '@/lib/auth'
+import { CONCERT_DETAIL_SELECT } from '@/lib/concerts'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -8,37 +9,11 @@ type Props = {
 
 export default async function EditConcertPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  const { supabase, user } = await requireUser()
 
   const { data: concert, error } = await supabase
     .from('concerts')
-    .select(`
-      id,
-      title,
-      event_date,
-      start_time,
-      prefecture,
-      venue,
-      organization_name,
-      flyer_image_url,
-      official_url,
-      note,
-      created_by,
-      programs (
-        id,
-        title,
-        composer,
-        order_no
-      )
-    `)
+    .select(CONCERT_DETAIL_SELECT)
     .eq('id', id)
     .single()
 

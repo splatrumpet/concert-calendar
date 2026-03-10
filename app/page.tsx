@@ -1,10 +1,9 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
+import ConcertCard from '@/app/components/concert-card'
+import ConcertSearchForm from '@/app/components/concert-search-form'
+import { CONCERT_LIST_SELECT } from '@/lib/concerts'
+import { getTodayInJst } from '@/lib/date'
 import { createClient } from '@/lib/supabase/server'
-import { PREFECTURES } from '@/lib/prefectures'
-
-function getTodayInJst(): string {
-  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(new Date())
-}
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -12,7 +11,7 @@ export default async function HomePage() {
 
   const { data: todayConcerts, error } = await supabase
     .from('concerts')
-    .select('id,title,event_date,start_time,prefecture,venue,organization_name')
+    .select(CONCERT_LIST_SELECT)
     .eq('event_date', today)
     .order('start_time', { ascending: true })
 
@@ -23,51 +22,18 @@ export default async function HomePage() {
         <p className="mb-4 text-sm text-slate-600">{today}</p>
 
         {error && <p>今日の演奏会取得に失敗しました。</p>}
-
         {!error && (todayConcerts?.length ?? 0) === 0 && <p>本日開催の演奏会はありません。</p>}
 
         <div className="space-y-3">
           {todayConcerts?.map((concert) => (
-            <article key={concert.id} className="rounded border p-4">
-              <h2 className="text-lg font-semibold">{concert.title}</h2>
-              <p>{concert.event_date} {concert.start_time}</p>
-              <p>{concert.prefecture} / {concert.venue}</p>
-              <p>{concert.organization_name}</p>
-              <Link href={`/concerts/${concert.id}`} className="underline">
-                詳細を見る
-              </Link>
-            </article>
+            <ConcertCard key={concert.id} concert={concert} />
           ))}
         </div>
       </section>
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="mb-4 text-2xl font-semibold">検索</h2>
-        <form action="/concerts" method="get" className="grid gap-3 md:grid-cols-4">
-          <input
-            type="date"
-            name="event_date"
-            className="rounded border px-3 py-2"
-            aria-label="開催日"
-          />
-          <select name="prefecture" defaultValue="" className="rounded border px-3 py-2" aria-label="都道府県">
-            <option value="">都道府県（すべて）</option>
-            {PREFECTURES.map((prefecture) => (
-              <option key={prefecture} value={prefecture}>
-                {prefecture}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="program"
-            placeholder="曲目"
-            className="rounded border px-3 py-2"
-          />
-          <button type="submit" className="rounded border bg-slate-900 px-4 py-2 text-white">
-            検索する
-          </button>
-        </form>
+        <ConcertSearchForm submitLabel="検索する" />
       </section>
 
       <section className="flex flex-wrap gap-3">

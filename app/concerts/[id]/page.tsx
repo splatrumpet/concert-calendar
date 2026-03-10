@@ -1,7 +1,8 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { deleteConcertAction } from '@/app/actions/concerts'
+import { getCurrentUser } from '@/lib/auth'
+import { fetchConcertById, sortPrograms } from '@/lib/concerts'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -9,41 +10,13 @@ type Props = {
 
 export default async function ConcertDetailPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
+  const [{ user }, concert] = await Promise.all([getCurrentUser(), fetchConcertById(id)])
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const { data: concert, error } = await supabase
-    .from('concerts')
-    .select(`
-      id,
-      title,
-      event_date,
-      start_time,
-      prefecture,
-      venue,
-      organization_name,
-      flyer_image_url,
-      official_url,
-      note,
-      created_by,
-      programs (
-        id,
-        title,
-        composer,
-        order_no
-      )
-    `)
-    .eq('id', id)
-    .single()
-
-  if (error || !concert) {
+  if (!concert) {
     notFound()
   }
 
-  const programs = [...(concert.programs ?? [])].sort((a, b) => a.order_no - b.order_no)
+  const programs = sortPrograms(concert.programs)
   const isOwner = user?.id === concert.created_by
 
   return (

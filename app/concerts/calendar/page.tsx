@@ -1,4 +1,5 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
+import { getAdjacentMonth, getMonthString, isValidDate, makeMonthMeta, parseMonth } from '@/lib/date'
 import { createClient } from '@/lib/supabase/server'
 
 type Props = {
@@ -8,56 +9,11 @@ type Props = {
   }>
 }
 
-type CalendarDay = {
-  date: string
-  inMonth: boolean
-}
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Tokyo' }).format(value)
-}
-
-function parseMonth(month?: string): { year: number; month: number } {
-  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-    const now = new Date()
-    return { year: now.getFullYear(), month: now.getMonth() + 1 }
-  }
-
-  const [year, monthNumber] = month.split('-').map(Number)
-  return { year, month: monthNumber }
-}
-
-function makeMonthMeta(year: number, month: number) {
-  const first = new Date(year, month - 1, 1)
-  const last = new Date(year, month, 0)
-  const firstWeekday = first.getDay()
-
-  const start = new Date(year, month - 1, 1 - firstWeekday)
-  const days: CalendarDay[] = []
-
-  for (let i = 0; i < 42; i += 1) {
-    const day = new Date(start)
-    day.setDate(start.getDate() + i)
-    const date = formatDate(day)
-
-    days.push({
-      date,
-      inMonth: day.getMonth() === month - 1,
-    })
-  }
-
-  return {
-    monthStart: formatDate(first),
-    monthEnd: formatDate(last),
-    days,
-  }
-}
-
 export default async function ConcertCalendarPage({ searchParams }: Props) {
   const params = await searchParams
   const selected = parseMonth(params.month)
   const { monthStart, monthEnd, days } = makeMonthMeta(selected.year, selected.month)
-  const selectedDate = params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : undefined
+  const selectedDate = isValidDate(params.date) ? params.date : undefined
 
   const supabase = await createClient()
 
@@ -82,20 +38,18 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
         .order('start_time', { ascending: true })
     : { data: [], error: null }
 
-  const monthString = `${selected.year}-${String(selected.month).padStart(2, '0')}`
-  const prev = new Date(selected.year, selected.month - 2, 1)
-  const next = new Date(selected.year, selected.month, 1)
+  const monthString = getMonthString(selected.year, selected.month)
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">演奏会カレンダー</h1>
         <div className="flex gap-3 text-sm">
-          <Link href={`/concerts/calendar?month=${formatDate(prev).slice(0, 7)}`} className="underline">
+          <Link href={`/concerts/calendar?month=${getAdjacentMonth(selected.year, selected.month, -1)}`} className="underline">
             前月
           </Link>
           <span>{monthString}</span>
-          <Link href={`/concerts/calendar?month=${formatDate(next).slice(0, 7)}`} className="underline">
+          <Link href={`/concerts/calendar?month=${getAdjacentMonth(selected.year, selected.month, 1)}`} className="underline">
             次月
           </Link>
         </div>
@@ -113,6 +67,7 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
           {days.map((day) => {
             const count = counts.get(day.date) ?? 0
             const isSelected = selectedDate === day.date
+
             return (
               <Link
                 key={day.date}
@@ -135,15 +90,18 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
         </h2>
 
         {dayError && <p>日付別一覧の取得に失敗しました。</p>}
-
         {!dayError && selectedDate && (selectedDayConcerts?.length ?? 0) === 0 && <p>この日の演奏会はありません。</p>}
 
         <div className="space-y-3">
           {selectedDayConcerts?.map((concert) => (
             <article key={concert.id} className="rounded border p-3">
               <h3 className="font-semibold">{concert.title}</h3>
-              <p>{concert.event_date} {concert.start_time}</p>
-              <p>{concert.prefecture} / {concert.venue}</p>
+              <p>
+                {concert.event_date} {concert.start_time}
+              </p>
+              <p>
+                {concert.prefecture} / {concert.venue}
+              </p>
               <Link href={`/concerts/${concert.id}`} className="underline">
                 詳細を見る
               </Link>

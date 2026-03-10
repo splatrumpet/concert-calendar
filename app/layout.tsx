@@ -1,7 +1,7 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import SignOutButton from '@/app/components/sign-out-button'
+import { getCurrentUser } from '@/lib/auth'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -14,10 +14,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user } = await getCurrentUser()
 
   return (
     <html lang="ja">
