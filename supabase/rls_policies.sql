@@ -2,12 +2,14 @@
 -- 目的: concertsは本人のみ update/delete、programsも親concert所有者のみ更新可能
 
 alter table public.concerts enable row level security;
+alter table public.composers enable row level security;
 alter table public.programs enable row level security;
 
 drop policy if exists concerts_select_all on public.concerts;
 drop policy if exists concerts_insert_own on public.concerts;
 drop policy if exists concerts_update_own on public.concerts;
 drop policy if exists concerts_delete_own on public.concerts;
+drop policy if exists composers_select_all on public.composers;
 
 create policy concerts_select_all
 on public.concerts
@@ -32,6 +34,11 @@ on public.concerts
 for delete
 to authenticated
 using (created_by = auth.uid());
+
+create policy composers_select_all
+on public.composers
+for select
+using (true);
 
 drop policy if exists programs_select_all on public.programs;
 drop policy if exists programs_insert_own_concert on public.programs;

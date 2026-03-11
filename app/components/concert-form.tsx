@@ -4,17 +4,32 @@ import { useActionState, useState } from 'react'
 import type { ConcertFormState } from '@/app/actions/concerts'
 import AlertMessage from '@/app/components/alert-message'
 import { PREFECTURES } from '@/lib/prefectures'
-import type { ConcertFormAction, ConcertFormValues, ProgramInput } from '@/types/concert'
+import { normalizeSearchText } from '@/lib/text'
+import type {
+  ComposerRecord,
+  ConcertFormAction,
+  ConcertFormValues,
+  ProgramInput,
+} from '@/types/concert'
 
 type Props = {
   action: ConcertFormAction
   submitLabel: string
   pendingLabel: string
+  composerOptions: ComposerRecord[]
   initialValues?: ConcertFormValues
 }
 
-const EMPTY_PROGRAM: ProgramInput = { title: '', composer: '', order_no: 1 }
+const EMPTY_PROGRAM: ProgramInput = {
+  title: '',
+  composer_id: '',
+  composer_label: '',
+  composer_free_text: '',
+  order_no: 1,
+}
+
 const INITIAL_STATE: ConcertFormState = { error: null }
+const COMPOSER_DATALIST_ID = 'composer-options'
 
 function normalizePrograms(programs?: ProgramInput[]): ProgramInput[] {
   if (!programs || programs.length === 0) {
@@ -23,22 +38,34 @@ function normalizePrograms(programs?: ProgramInput[]): ProgramInput[] {
 
   return programs.map((program, index) => ({
     title: program.title,
-    composer: program.composer ?? '',
+    composer_id: program.composer_id ?? '',
+    composer_label: program.composer_label ?? '',
+    composer_free_text: program.composer_free_text ?? '',
     order_no: index + 1,
   }))
+}
+
+function getComposerInputValue(program: ProgramInput): string {
+  return program.composer_id ? program.composer_label ?? '' : program.composer_free_text ?? ''
+}
+
+function findComposerOption(composerOptions: ComposerRecord[], value: string): ComposerRecord | undefined {
+  const normalizedValue = normalizeSearchText(value)
+  return composerOptions.find((composer) => normalizeSearchText(composer.display_name) === normalizedValue)
 }
 
 export default function ConcertForm({
   action,
   submitLabel,
   pendingLabel,
+  composerOptions,
   initialValues,
 }: Props) {
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE)
   const [programs, setPrograms] = useState<ProgramInput[]>(normalizePrograms(initialValues?.programs))
 
   const addProgram = () => {
-    setPrograms((current) => [...current, { title: '', composer: '', order_no: current.length + 1 }])
+    setPrograms((current) => [...current, { ...EMPTY_PROGRAM, order_no: current.length + 1 }])
   }
 
   const removeProgram = (index: number) => {
@@ -57,19 +84,62 @@ export default function ConcertForm({
     )
   }
 
+  const updateProgramComposer = (index: number, value: string) => {
+    const matchedComposer = findComposerOption(composerOptions, value)
+
+    setPrograms((current) =>
+      current.map((program, currentIndex) => {
+        if (currentIndex !== index) {
+          return program
+        }
+
+        if (!value.trim()) {
+          return {
+            ...program,
+            composer_id: '',
+            composer_label: '',
+            composer_free_text: '',
+          }
+        }
+
+        if (matchedComposer) {
+          return {
+            ...program,
+            composer_id: String(matchedComposer.id),
+            composer_label: matchedComposer.display_name,
+            composer_free_text: '',
+          }
+        }
+
+        return {
+          ...program,
+          composer_id: '',
+          composer_label: '',
+          composer_free_text: value,
+        }
+      })
+    )
+  }
+
   return (
     <form action={formAction} className="panel-strong space-y-7 p-6 md:space-y-8 md:p-9">
       {initialValues?.id && <input type="hidden" name="id" value={initialValues.id} />}
       {state.error && <AlertMessage>{state.error}</AlertMessage>}
 
+      <datalist id={COMPOSER_DATALIST_ID}>
+        {composerOptions.map((composer) => (
+          <option key={composer.id} value={composer.display_name} />
+        ))}
+      </datalist>
+
       <div className="grid gap-5 md:grid-cols-2 md:gap-6">
         <div className="md:col-span-2">
-          <label className="label-text">演奏会名</label>
+          <label className="label-text">タイトル</label>
           <input name="title" defaultValue={initialValues?.title ?? ''} required className="field" />
         </div>
 
         <div>
-          <label className="label-text">開催日</label>
+          <label className="label-text">日付</label>
           <input
             name="event_date"
             type="date"
@@ -80,11 +150,33 @@ export default function ConcertForm({
         </div>
 
         <div>
+          <label className="label-text">主催者</label>
+          <input
+            name="organization_name"
+            defaultValue={initialValues?.organization_name ?? ''}
+            required
+            className="field"
+          />
+        </div>
+
+        <div>
+          <label className="label-text">開場時間</label>
+          <input
+            name="open_time"
+            type="time"
+            defaultValue={initialValues?.open_time ?? ''}
+            step={300}
+            className="field"
+          />
+        </div>
+
+        <div>
           <label className="label-text">開演時間</label>
           <input
             name="start_time"
             type="time"
             defaultValue={initialValues?.start_time ?? ''}
+            step={300}
             required
             className="field"
           />
@@ -114,16 +206,6 @@ export default function ConcertForm({
           <input name="venue" defaultValue={initialValues?.venue ?? ''} required className="field" />
         </div>
 
-        <div className="md:col-span-2">
-          <label className="label-text">主催者名</label>
-          <input
-            name="organization_name"
-            defaultValue={initialValues?.organization_name ?? ''}
-            required
-            className="field"
-          />
-        </div>
-
         <div>
           <label className="label-text">公式URL</label>
           <input
@@ -146,7 +228,7 @@ export default function ConcertForm({
       </div>
 
       <div>
-        <label className="label-text">備考</label>
+        <label className="label-text">メモ</label>
         <textarea
           name="note"
           defaultValue={initialValues?.note ?? ''}
@@ -158,18 +240,20 @@ export default function ConcertForm({
       <section className="space-y-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">Program</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">
+              プログラム
+            </p>
             <h2 className="section-title mt-2 text-[var(--primary-strong)]">プログラム</h2>
           </div>
           <button type="button" onClick={addProgram} className="secondary-button">
-            曲目を追加
+            プログラムを追加
           </button>
         </div>
 
         {programs.map((program, index) => (
           <div key={index} className="rounded-3xl border border-[var(--line)] bg-white/88 p-5 md:p-6">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--accent)]">
-              Program {index + 1}
+              プログラム {index + 1}
             </div>
 
             <div className="grid gap-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
@@ -183,11 +267,13 @@ export default function ConcertForm({
               </div>
 
               <div>
-                <label className="label-text">作曲者</label>
+                <label className="label-text">作曲家</label>
                 <input
-                  value={program.composer ?? ''}
-                  onChange={(event) => updateProgram(index, 'composer', event.target.value)}
+                  value={getComposerInputValue(program)}
+                  onChange={(event) => updateProgramComposer(index, event.target.value)}
+                  list={COMPOSER_DATALIST_ID}
                   className="field"
+                  placeholder="作曲家名を入力または選択"
                 />
               </div>
 

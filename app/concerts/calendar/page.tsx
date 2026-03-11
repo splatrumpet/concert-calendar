@@ -21,7 +21,7 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
 
   const { data: monthConcerts, error: monthError } = await supabase
     .from('concerts')
-    .select('id,title,event_date,start_time')
+    .select('id,title,event_date,open_time,start_time')
     .gte('event_date', monthStart)
     .lte('event_date', monthEnd)
     .order('event_date', { ascending: true })
@@ -35,7 +35,7 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
   const { data: selectedDayConcerts, error: dayError } = selectedDate
     ? await supabase
         .from('concerts')
-        .select('id,title,event_date,start_time,prefecture,venue')
+        .select('id,title,event_date,open_time,start_time,prefecture,venue')
         .eq('event_date', selectedDate)
         .order('start_time', { ascending: true })
     : { data: [], error: null }
@@ -119,7 +119,9 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
             <article key={concert.id} className="rounded-3xl border border-[var(--line)] bg-white p-5">
               <h3 className="text-lg font-semibold md:text-xl">{concert.title}</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                {concert.event_date} {concert.start_time}
+                {concert.event_date}
+                {concert.open_time ? ` / 開場 ${concert.open_time}` : ''}
+                {` / 開演 ${concert.start_time}`}
               </p>
               <p className="text-sm leading-6 text-slate-600">
                 {concert.prefecture} / {concert.venue}

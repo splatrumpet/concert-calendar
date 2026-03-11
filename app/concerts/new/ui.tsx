@@ -1,6 +1,16 @@
 import { createConcertAction } from '@/app/actions/concerts'
 import ConcertForm from '@/app/components/concert-form'
+import { fetchComposerOptions } from '@/lib/concerts'
 
-export default function ConcertCreateForm() {
-  return <ConcertForm action={createConcertAction} submitLabel="投稿する" pendingLabel="投稿中..." />
+export default async function ConcertCreateForm() {
+  const composerOptions = await fetchComposerOptions()
+
+  return (
+    <ConcertForm
+      action={createConcertAction}
+      submitLabel="Create"
+      pendingLabel="Creating..."
+      composerOptions={composerOptions}
+    />
+  )
 }

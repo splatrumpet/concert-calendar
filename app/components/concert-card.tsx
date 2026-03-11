@@ -12,7 +12,8 @@ export default function ConcertCard({ concert, actions }: Props) {
       <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--primary)] md:text-[0.8rem]">
         <span className="rounded-full bg-[var(--primary-soft)] px-3 py-1">Concert</span>
         <span>{concert.event_date}</span>
-        <span>{concert.start_time}</span>
+        {concert.open_time && <span>開場 {concert.open_time}</span>}
+        <span>開演 {concert.start_time}</span>
       </div>
 
       <h2 className="text-[1.3rem] font-semibold leading-tight tracking-[-0.03em] text-slate-900 md:text-[1.6rem]">

@@ -1,18 +1,22 @@
 import { updateConcertAction } from '@/app/actions/concerts'
 import ConcertForm from '@/app/components/concert-form'
-import { sortPrograms } from '@/lib/concerts'
+import { fetchComposerOptions, getProgramComposerName, sortPrograms } from '@/lib/concerts'
 import type { ConcertRecord } from '@/types/concert'
 
-export default function ConcertEditForm({ concert }: { concert: ConcertRecord }) {
+export default async function ConcertEditForm({ concert }: { concert: ConcertRecord }) {
+  const composerOptions = await fetchComposerOptions()
+
   return (
     <ConcertForm
       action={updateConcertAction}
-      submitLabel="更新する"
-      pendingLabel="更新中..."
+      submitLabel="Update"
+      pendingLabel="Updating..."
+      composerOptions={composerOptions}
       initialValues={{
         id: String(concert.id),
         title: concert.title,
         event_date: concert.event_date,
+        open_time: concert.open_time,
         start_time: concert.start_time,
         prefecture: concert.prefecture,
         venue: concert.venue,
@@ -22,7 +26,9 @@ export default function ConcertEditForm({ concert }: { concert: ConcertRecord })
         note: concert.note,
         programs: sortPrograms(concert.programs).map((program, index) => ({
           title: program.title,
-          composer: program.composer ?? '',
+          composer_id: program.composer_id ? String(program.composer_id) : '',
+          composer_label: program.composer?.display_name ?? '',
+          composer_free_text: program.composer_id ? '' : getProgramComposerName(program),
           order_no: index + 1,
         })),
       }}
