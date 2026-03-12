@@ -15,6 +15,8 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
   const params = await searchParams
   const selected = parseMonth(params.month)
   const { monthStart, monthEnd, days } = makeMonthMeta(selected.year, selected.month)
+  const calendarStart = days[0]?.date ?? monthStart
+  const calendarEnd = days.at(-1)?.date ?? monthEnd
   const selectedDate = isValidDate(params.date) ? params.date : undefined
 
   const supabase = await createClient()
@@ -22,8 +24,8 @@ export default async function ConcertCalendarPage({ searchParams }: Props) {
   const { data: monthConcerts, error: monthError } = await supabase
     .from('concerts')
     .select('id,title,event_date,open_time,start_time')
-    .gte('event_date', monthStart)
-    .lte('event_date', monthEnd)
+    .gte('event_date', calendarStart)
+    .lte('event_date', calendarEnd)
     .order('event_date', { ascending: true })
     .order('start_time', { ascending: true })
 
