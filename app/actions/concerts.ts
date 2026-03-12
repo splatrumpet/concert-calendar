@@ -31,6 +31,26 @@ function getFormValue(formData: FormData, key: string): string {
   return String(formData.get(key) ?? '').trim()
 }
 
+function toOptionalTrimmedString(value: unknown): string | undefined {
+  const normalizedValue = String(value ?? '').trim()
+  return normalizedValue || undefined
+}
+
+function parseProgramInput(program: ProgramInput, index: number): ProgramInput {
+  return {
+    title: String(program.title ?? '').trim(),
+    composer_id: toOptionalTrimmedString(program.composer_id),
+    composer_label: toOptionalTrimmedString(program.composer_label),
+    composer_free_text: toOptionalTrimmedString(program.composer_free_text),
+    soloist: toOptionalTrimmedString(program.soloist),
+    order_no: Number(program.order_no ?? index + 1),
+  }
+}
+
+function hasComposer(program: ProgramInput): boolean {
+  return Boolean(program.composer_id || program.composer_free_text)
+}
+
 function isFiveMinuteTime(value: string | undefined): boolean {
   if (!value) {
     return true
@@ -52,16 +72,7 @@ function parsePrograms(raw: FormDataEntryValue | null): ProgramInput[] {
   try {
     const parsed = JSON.parse(String(raw)) as ProgramInput[]
 
-    return parsed
-      .map((program, index) => ({
-        title: String(program.title ?? '').trim(),
-        composer_id: String(program.composer_id ?? '').trim() || undefined,
-        composer_label: String(program.composer_label ?? '').trim() || undefined,
-        composer_free_text: String(program.composer_free_text ?? '').trim() || undefined,
-        soloist: String(program.soloist ?? '').trim() || undefined,
-        order_no: Number(program.order_no ?? index + 1),
-      }))
-      .filter((program) => program.title.length > 0)
+    return parsed.map(parseProgramInput).filter((program) => program.title.length > 0)
   } catch {
     return []
   }
@@ -100,11 +111,7 @@ function validatePayload(payload: ConcertPayload): void {
     throw new Error('プログラムを1件以上入力してください。')
   }
 
-  if (
-    payload.programs.some(
-      (program) => !program.composer_id && !(program.composer_free_text && program.composer_free_text.length > 0)
-    )
-  ) {
+  if (payload.programs.some((program) => !hasComposer(program))) {
     throw new Error('各プログラムに作曲家を設定してください。')
   }
 }

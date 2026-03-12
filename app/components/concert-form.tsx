@@ -51,6 +51,44 @@ function getComposerInputValue(program: ProgramInput): string {
   return program.composer_id ? program.composer_label ?? '' : program.composer_free_text ?? ''
 }
 
+
+function normalizeProgramComposer(program: ProgramInput, composerOptions: ComposerRecord[], value: string): ProgramInput {
+  const matchedComposer = findComposerOption(composerOptions, value)
+
+  if (!value.trim()) {
+    return {
+      ...program,
+      composer_id: '',
+      composer_label: '',
+      composer_free_text: '',
+    }
+  }
+
+  if (matchedComposer) {
+    return {
+      ...program,
+      composer_id: String(matchedComposer.id),
+      composer_label: matchedComposer.display_name,
+      composer_free_text: '',
+    }
+  }
+
+  return {
+    ...program,
+    composer_id: '',
+    composer_label: '',
+    composer_free_text: value,
+  }
+}
+
+function updateProgramAt(programs: ProgramInput[], index: number, updater: (program: ProgramInput) => ProgramInput) {
+  return programs.map((program, currentIndex) => (currentIndex === index ? updater(program) : program))
+}
+
+function renumberPrograms(programs: ProgramInput[]): ProgramInput[] {
+  return programs.map((program, index) => ({ ...program, order_no: index + 1 }))
+}
+
 function findComposerOption(composerOptions: ComposerRecord[], value: string): ComposerRecord | undefined {
   const normalizedValue = normalizeSearchText(value)
   return composerOptions.find((composer) => normalizeSearchText(composer.display_name) === normalizedValue)
@@ -96,55 +134,16 @@ export default function ConcertForm({
   }
 
   const removeProgram = (index: number) => {
-    setPrograms((current) =>
-      current
-        .filter((_, currentIndex) => currentIndex !== index)
-        .map((program, currentIndex) => ({ ...program, order_no: currentIndex + 1 }))
-    )
+    setPrograms((current) => renumberPrograms(current.filter((_, currentIndex) => currentIndex !== index)))
   }
 
   const updateProgram = (index: number, key: keyof ProgramInput, value: string) => {
-    setPrograms((current) =>
-      current.map((program, currentIndex) =>
-        currentIndex === index ? { ...program, [key]: value } : program
-      )
-    )
+    setPrograms((current) => updateProgramAt(current, index, (program) => ({ ...program, [key]: value })))
   }
 
   const updateProgramComposer = (index: number, value: string) => {
-    const matchedComposer = findComposerOption(composerOptions, value)
-
     setPrograms((current) =>
-      current.map((program, currentIndex) => {
-        if (currentIndex !== index) {
-          return program
-        }
-
-        if (!value.trim()) {
-          return {
-            ...program,
-            composer_id: '',
-            composer_label: '',
-            composer_free_text: '',
-          }
-        }
-
-        if (matchedComposer) {
-          return {
-            ...program,
-            composer_id: String(matchedComposer.id),
-            composer_label: matchedComposer.display_name,
-            composer_free_text: '',
-          }
-        }
-
-        return {
-          ...program,
-          composer_id: '',
-          composer_label: '',
-          composer_free_text: value,
-        }
-      })
+      updateProgramAt(current, index, (program) => normalizeProgramComposer(program, composerOptions, value))
     )
   }
 
