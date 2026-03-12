@@ -42,6 +42,7 @@ export default async function ConcertDetailPage({ params }: Props) {
     { label: '指揮者', value: concert.conductor || '未設定' },
   ]
   const locationItems: DetailItem[] = [
+    { label: '指揮者', value: concert.conductor || '未設定' },
     { label: '都道府県', value: concert.prefecture },
     { label: '会場', value: concert.venue },
   ]
