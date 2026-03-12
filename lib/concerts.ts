@@ -10,7 +10,7 @@ type ConcertRow = Omit<ConcertRecord, 'programs'> & {
 }
 
 export const CONCERT_LIST_SELECT =
-  'id,title,event_date,open_time,start_time,prefecture,venue,organization_name'
+  'id,title,event_date,open_time,start_time,conductor,prefecture,venue,organization_name'
 
 export const CONCERT_DETAIL_SELECT = `
   id,
@@ -18,6 +18,7 @@ export const CONCERT_DETAIL_SELECT = `
   event_date,
   open_time,
   start_time,
+  conductor,
   prefecture,
   venue,
   organization_name,
@@ -30,6 +31,7 @@ export const CONCERT_DETAIL_SELECT = `
     title,
     composer_id,
     composer_free_text,
+    soloist,
     order_no,
     composer:composers!programs_composer_id_fkey (
       id,
@@ -50,6 +52,7 @@ export function buildConcertMutation(payload: ConcertInput, createdBy?: string) 
     event_date: payload.event_date,
     open_time: normalizeOptionalText(payload.open_time ?? ''),
     start_time: payload.start_time,
+    conductor: normalizeOptionalText(payload.conductor ?? ''),
     prefecture: payload.prefecture,
     venue: payload.venue,
     organization_name: payload.organization_name,
@@ -68,6 +71,7 @@ export function buildProgramRows(concertId: string | number, programs: ConcertIn
     composer_free_text: program.composer_id
       ? null
       : normalizeOptionalText(program.composer_free_text ?? ''),
+    soloist: normalizeOptionalText(program.soloist ?? ''),
     order_no: program.order_no || index + 1,
   }))
 }

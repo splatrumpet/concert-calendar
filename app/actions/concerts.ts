@@ -58,6 +58,7 @@ function parsePrograms(raw: FormDataEntryValue | null): ProgramInput[] {
         composer_id: String(program.composer_id ?? '').trim() || undefined,
         composer_label: String(program.composer_label ?? '').trim() || undefined,
         composer_free_text: String(program.composer_free_text ?? '').trim() || undefined,
+        soloist: String(program.soloist ?? '').trim() || undefined,
         order_no: Number(program.order_no ?? index + 1),
       }))
       .filter((program) => program.title.length > 0)
@@ -75,6 +76,7 @@ function buildPayload(formData: FormData): ConcertPayload {
     event_date: getFormValue(formData, 'event_date'),
     open_time: getFormValue(formData, 'open_time'),
     start_time: getFormValue(formData, 'start_time'),
+    conductor: getFormValue(formData, 'conductor'),
     prefecture: getFormValue(formData, 'prefecture'),
     venue: getFormValue(formData, 'venue'),
     organization_name: getFormValue(formData, 'organization_name'),

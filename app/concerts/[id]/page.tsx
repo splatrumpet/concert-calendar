@@ -23,6 +23,7 @@ export default async function ConcertDetailPage({ params }: Props) {
     { label: '主催者', value: concert.organization_name },
     { label: '開場時間', value: concert.open_time || '未設定' },
     { label: '開演時間', value: concert.start_time },
+    { label: '指揮者', value: concert.conductor || '未設定' },
     { label: '都道府県', value: concert.prefecture },
     { label: '会場', value: concert.venue },
   ]
@@ -89,6 +90,11 @@ export default async function ConcertDetailPage({ params }: Props) {
                 <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
                   {getProgramComposerName(program)}
                 </div>
+                {program.soloist && (
+                  <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
+                    ソリスト: {program.soloist}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

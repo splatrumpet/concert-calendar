@@ -25,6 +25,7 @@ const EMPTY_PROGRAM: ProgramInput = {
   composer_id: '',
   composer_label: '',
   composer_free_text: '',
+  soloist: '',
   order_no: 1,
 }
 
@@ -41,6 +42,7 @@ function normalizePrograms(programs?: ProgramInput[]): ProgramInput[] {
     composer_id: program.composer_id ?? '',
     composer_label: program.composer_label ?? '',
     composer_free_text: program.composer_free_text ?? '',
+    soloist: program.soloist ?? '',
     order_no: index + 1,
   }))
 }
@@ -182,6 +184,11 @@ export default function ConcertForm({
             required
             className="field"
           />
+        </div>
+
+        <div>
+          <label className="label-text">指揮者</label>
+          <input name="conductor" defaultValue={initialValues?.conductor ?? ''} className="field" />
         </div>
 
         <div>
@@ -328,7 +335,7 @@ export default function ConcertForm({
               プログラム {index + 1}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
+            <div className="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
               <div>
                 <label className="label-text">曲名</label>
                 <input
@@ -346,6 +353,16 @@ export default function ConcertForm({
                   list={COMPOSER_DATALIST_ID}
                   className="field"
                   placeholder="作曲家名を入力または選択"
+                />
+              </div>
+
+              <div>
+                <label className="label-text">ソリスト（任意）</label>
+                <input
+                  value={program.soloist ?? ''}
+                  onChange={(event) => updateProgram(index, 'soloist', event.target.value)}
+                  className="field"
+                  placeholder="例: Vn. 山田 花子"
                 />
               </div>
 

@@ -3,6 +3,7 @@ export type ProgramInput = {
   composer_id?: string
   composer_label?: string
   composer_free_text?: string
+  soloist?: string
   order_no: number
 }
 
@@ -16,6 +17,7 @@ export type ConcertInput = {
   event_date: string
   open_time?: string
   start_time: string
+  conductor?: string
   prefecture: string
   venue: string
   organization_name: string
@@ -30,6 +32,7 @@ export type ProgramRecord = {
   title: string
   composer_id: string | number | null
   composer_free_text: string | null
+  soloist: string | null
   composer: ComposerRecord | null
   order_no: number
 }
@@ -40,6 +43,7 @@ export type ConcertListItem = {
   event_date: string
   open_time: string | null
   start_time: string
+  conductor: string | null
   prefecture: string
   venue: string
   organization_name: string
@@ -59,6 +63,7 @@ export type ConcertFormValues = {
   event_date?: string
   open_time?: string | null
   start_time?: string
+  conductor?: string | null
   prefecture?: string
   venue?: string
   organization_name?: string
