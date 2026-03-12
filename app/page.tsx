@@ -61,7 +61,7 @@ export default async function HomePage() {
                   Signature Access
                 </span>
               </div>
-              <ConcertSearchForm submitLabel="検索する" />
+              <ConcertSearchForm submitLabel="検索する" formClassName="grid gap-3 md:grid-cols-3" />
             </div>
 
             <div className="grid gap-4">
