@@ -11,6 +11,7 @@ type Props = {
 type DetailCardProps = {
   label: string
   value: string
+  className?: string
 }
 
 function formatDisplayTime(value: string | null): string {
@@ -21,9 +22,9 @@ function formatDisplayTime(value: string | null): string {
   return value.slice(0, 5)
 }
 
-function DetailCard({ label, value }: DetailCardProps) {
+function DetailCard({ label, value, className = '' }: DetailCardProps) {
   return (
-    <div className="rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm">
+    <div className={`rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm ${className}`}>
       <div className="text-xs font-semibold tracking-[0.12em] text-[color:var(--accent)]">{label}</div>
       <div className="mt-2 text-base font-semibold leading-7 text-slate-900 md:text-[1.02rem]">{value}</div>
     </div>
@@ -70,8 +71,8 @@ export default async function ConcertDetailPage({ params }: Props) {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <DetailCard label="日付" value={concert.event_date} />
+          <div className="grid gap-3 md:grid-cols-4">
+            <DetailCard label="日付" value={concert.event_date} className="md:col-span-2" />
             <DetailCard label="開場時間" value={formatDisplayTime(concert.open_time)} />
             <DetailCard label="開演時間" value={formatDisplayTime(concert.start_time)} />
           </div>
