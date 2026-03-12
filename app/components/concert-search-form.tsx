@@ -8,6 +8,9 @@ type Props = {
   action?: string
   submitLabel?: string
   formClassName?: string
+  programClassName?: string
+  composerClassName?: string
+  submitClassName?: string
 }
 
 export default function ConcertSearchForm({
@@ -18,6 +21,9 @@ export default function ConcertSearchForm({
   action = '/concerts',
   submitLabel = '検索',
   formClassName = 'grid gap-3 md:grid-cols-5',
+  programClassName = 'field',
+  composerClassName = 'field',
+  submitClassName = 'primary-button',
 }: Props) {
   return (
     <form action={action} method="get" className={formClassName}>
@@ -46,16 +52,16 @@ export default function ConcertSearchForm({
         name="program"
         defaultValue={program}
         placeholder="曲目"
-        className="field"
+        className={programClassName}
       />
       <input
         type="text"
         name="composer"
         defaultValue={composer}
         placeholder="作曲家"
-        className="field"
+        className={composerClassName}
       />
-      <button type="submit" className="primary-button">
+      <button type="submit" className={submitClassName}>
         {submitLabel}
       </button>
     </form>
