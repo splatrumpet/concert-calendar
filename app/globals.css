@@ -169,8 +169,10 @@ textarea {
 }
 
 .primary-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 34px rgba(13, 38, 77, 0.22);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 3px rgba(203, 181, 143, 0.32),
+    0 18px 34px rgba(13, 38, 77, 0.22);
 }
 
 .secondary-button {
@@ -192,10 +194,27 @@ textarea {
   color: var(--primary);
 }
 
+.secondary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(20, 57, 111, 0.12);
+}
+
 .text-link {
   color: var(--primary-strong);
   text-decoration: none;
   font-weight: 600;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.24em;
+}
+
+@media (hover: hover) {
+  button:hover,
+  a:hover {
+    cursor: pointer;
+  }
 }
 
 .label-text {
