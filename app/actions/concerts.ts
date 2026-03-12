@@ -115,6 +115,19 @@ function toErrorState(error: unknown): ConcertFormState {
   return { error: DEFAULT_ERROR_MESSAGE }
 }
 
+async function executeConcertAction(action: () => Promise<void>): Promise<ConcertFormState> {
+  try {
+    await action()
+    return { error: null }
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
+
+    return toErrorState(error)
+  }
+}
+
 async function getCurrentUserId() {
   const supabase = await createClient()
   const {
@@ -220,7 +233,7 @@ export async function createConcertAction(
   _prevState: ConcertFormState,
   formData: FormData
 ): Promise<ConcertFormState> {
-  try {
+  return executeConcertAction(async () => {
     const payload = buildPayload(formData)
     validatePayload(payload)
 
@@ -248,20 +261,14 @@ export async function createConcertAction(
 
     revalidateConcertPaths(String(concert.id))
     redirect(`/concerts/${concert.id}`)
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error
-    }
-
-    return toErrorState(error)
-  }
+  })
 }
 
 export async function updateConcertAction(
   _prevState: ConcertFormState,
   formData: FormData
 ): Promise<ConcertFormState> {
-  try {
+  return executeConcertAction(async () => {
     const payload = buildPayload(formData)
 
     if (!payload.id) {
@@ -287,13 +294,7 @@ export async function updateConcertAction(
 
     revalidateConcertPaths(payload.id)
     redirect(`/concerts/${payload.id}`)
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error
-    }
-
-    return toErrorState(error)
-  }
+  })
 }
 
 export async function deleteConcertAction(formData: FormData): Promise<void> {
