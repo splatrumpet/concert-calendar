@@ -8,6 +8,20 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
+type DetailItem = {
+  label: string
+  value: string
+}
+
+function DetailCard({ item }: { item: DetailItem }) {
+  return (
+    <div className="rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm">
+      <div className="text-xs font-semibold tracking-[0.12em] text-[color:var(--accent)]">{item.label}</div>
+      <div className="mt-2 text-base font-semibold leading-7 text-slate-900 md:text-[1.02rem]">{item.value}</div>
+    </div>
+  )
+}
+
 export default async function ConcertDetailPage({ params }: Props) {
   const { id } = await params
   const [{ user }, concert] = await Promise.all([getCurrentUser(), fetchConcertById(id)])
@@ -18,11 +32,16 @@ export default async function ConcertDetailPage({ params }: Props) {
 
   const programs = sortPrograms(concert.programs)
   const isOwner = user?.id === concert.created_by
-  const detailItems = [
+  const dateTimeItems: DetailItem[] = [
     { label: '日付', value: concert.event_date },
-    { label: '主催者', value: concert.organization_name },
     { label: '開場時間', value: concert.open_time || '未設定' },
     { label: '開演時間', value: concert.start_time },
+  ]
+  const organizerAndConductorItems: DetailItem[] = [
+    { label: '主催者', value: concert.organization_name },
+    { label: '指揮者', value: concert.conductor || '未設定' },
+  ]
+  const locationItems: DetailItem[] = [
     { label: '都道府県', value: concert.prefecture },
     { label: '会場', value: concert.venue },
   ]
@@ -55,20 +74,24 @@ export default async function ConcertDetailPage({ params }: Props) {
           )}
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {detailItems.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm"
-            >
-              <div className="text-xs font-semibold tracking-[0.12em] text-[color:var(--accent)]">
-                {item.label}
-              </div>
-              <div className="mt-2 text-base font-semibold leading-7 text-slate-900 md:text-[1.02rem]">
-                {item.value}
-              </div>
-            </div>
-          ))}
+        <div className="mt-6 space-y-3">
+          <div className="grid gap-3 md:grid-cols-3">
+            {dateTimeItems.map((item) => (
+              <DetailCard key={item.label} item={item} />
+            ))}
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {organizerAndConductorItems.map((item) => (
+              <DetailCard key={item.label} item={item} />
+            ))}
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {locationItems.map((item) => (
+              <DetailCard key={item.label} item={item} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -89,6 +112,11 @@ export default async function ConcertDetailPage({ params }: Props) {
                 <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
                   {getProgramComposerName(program)}
                 </div>
+                {program.soloist && (
+                  <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
+                    ソリスト: {program.soloist}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
