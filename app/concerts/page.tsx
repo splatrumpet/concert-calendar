@@ -1,6 +1,6 @@
 import ConcertCard from '@/app/components/concert-card'
 import ConcertSearchForm from '@/app/components/concert-search-form'
-import { CONCERT_LIST_SELECT, fetchConcertIdsByProgram } from '@/lib/concerts'
+import { CONCERT_LIST_SELECT, fetchConcertIdsByProgramOrComposer } from '@/lib/concerts'
 import { createClient } from '@/lib/supabase/server'
 
 type Props = {
@@ -8,22 +8,23 @@ type Props = {
     event_date?: string
     prefecture?: string
     program?: string
+    composer?: string
   }>
 }
 
 export default async function ConcertListPage({ searchParams }: Props) {
-  const { event_date, prefecture, program } = await searchParams
+  const { event_date, prefecture, program, composer } = await searchParams
   const supabase = await createClient()
 
   let concertIds: number[] | null = null
 
   try {
-    concertIds = await fetchConcertIdsByProgram(program)
+    concertIds = await fetchConcertIdsByProgramOrComposer({ program, composer })
   } catch {
     return <main className="p-6">曲目検索に失敗しました。</main>
   }
 
-  if (program && concertIds?.length === 0) {
+  if ((program || composer) && concertIds?.length === 0) {
     return (
       <main className="space-y-7">
         <section className="panel-strong p-6 md:p-8">
@@ -34,7 +35,7 @@ export default async function ConcertListPage({ searchParams }: Props) {
           </p>
         </section>
         <section className="panel p-6 md:p-8">
-          <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
+          <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} composer={composer} />
         </section>
       </main>
     )
@@ -70,12 +71,12 @@ export default async function ConcertListPage({ searchParams }: Props) {
         <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--accent)]">Concerts</p>
         <h1 className="section-title mt-2">演奏会一覧</h1>
         <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base">
-          開催日、都道府県、曲目から演奏会を横断して探せます。
+          開催日、都道府県、曲目、作曲家から演奏会を横断して探せます。
         </p>
       </section>
 
       <section className="panel p-6 md:p-8">
-        <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} />
+        <ConcertSearchForm eventDate={event_date} prefecture={prefecture} program={program} composer={composer} />
       </section>
 
       <section className="space-y-4 md:space-y-5">
