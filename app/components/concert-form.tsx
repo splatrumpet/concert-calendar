@@ -20,6 +20,10 @@ type Props = {
   initialValues?: ConcertFormValues
 }
 
+type ProgramFormItem = ProgramInput & {
+  clientId: string
+}
+
 const EMPTY_PROGRAM: ProgramInput = {
   title: '',
   composer_id: '',
@@ -32,27 +36,47 @@ const EMPTY_PROGRAM: ProgramInput = {
 const INITIAL_STATE: ConcertFormState = { error: null }
 const COMPOSER_DATALIST_ID = 'composer-options'
 
-function normalizePrograms(programs?: ProgramInput[]): ProgramInput[] {
-  if (!programs || programs.length === 0) {
-    return [EMPTY_PROGRAM]
-  }
+function createProgramClientId(): string {
+  return crypto.randomUUID()
+}
 
-  return programs.map((program, index) => ({
+function toProgramFormItem(program: ProgramInput, index: number): ProgramFormItem {
+  return {
     title: program.title,
     composer_id: program.composer_id ?? '',
     composer_label: program.composer_label ?? '',
     composer_free_text: program.composer_free_text ?? '',
     soloist: program.soloist ?? '',
     order_no: index + 1,
-  }))
+    clientId: createProgramClientId(),
+  }
 }
 
-function getComposerInputValue(program: ProgramInput): string {
+function toProgramInput(program: ProgramFormItem): ProgramInput {
+  return {
+    title: program.title,
+    composer_id: program.composer_id,
+    composer_label: program.composer_label,
+    composer_free_text: program.composer_free_text,
+    soloist: program.soloist,
+    order_no: program.order_no,
+  }
+}
+
+function normalizePrograms(programs?: ProgramInput[]): ProgramFormItem[] {
+  if (!programs || programs.length === 0) {
+    return [{ ...EMPTY_PROGRAM, clientId: createProgramClientId() }]
+  }
+
+  return programs.map(toProgramFormItem)
+}
+
+function getComposerInputValue(program: ProgramFormItem): string {
   return program.composer_id ? program.composer_label ?? '' : program.composer_free_text ?? ''
 }
 
 
-function normalizeProgramComposer(program: ProgramInput, composerOptions: ComposerRecord[], value: string): ProgramInput {
+function normalizeProgramComposer(program: ProgramFormItem, composerOptions: ComposerRecord[], value: string): ProgramFormItem {
   const matchedComposer = findComposerOption(composerOptions, value)
 
   if (!value.trim()) {
@@ -81,11 +105,15 @@ function normalizeProgramComposer(program: ProgramInput, composerOptions: Compos
   }
 }
 
-function updateProgramAt(programs: ProgramInput[], index: number, updater: (program: ProgramInput) => ProgramInput) {
-  return programs.map((program, currentIndex) => (currentIndex === index ? updater(program) : program))
+function updateProgramById(
+  programs: ProgramFormItem[],
+  programId: string,
+  updater: (program: ProgramFormItem) => ProgramFormItem
+) {
+  return programs.map((program) => (program.clientId === programId ? updater(program) : program))
 }
 
-function renumberPrograms(programs: ProgramInput[]): ProgramInput[] {
+function renumberPrograms(programs: ProgramFormItem[]): ProgramFormItem[] {
   return programs.map((program, index) => ({ ...program, order_no: index + 1 }))
 }
 
@@ -123,27 +151,37 @@ export default function ConcertForm({
   initialValues,
 }: Props) {
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE)
-  const [programs, setPrograms] = useState<ProgramInput[]>(normalizePrograms(initialValues?.programs))
+  const [programs, setPrograms] = useState<ProgramFormItem[]>(normalizePrograms(initialValues?.programs))
   const [openTimeHour, setOpenTimeHour] = useState(getTimeParts(initialValues?.open_time).hour)
   const [openTimeMinute, setOpenTimeMinute] = useState(getTimeParts(initialValues?.open_time).minute)
   const [startTimeHour, setStartTimeHour] = useState(getTimeParts(initialValues?.start_time).hour)
   const [startTimeMinute, setStartTimeMinute] = useState(getTimeParts(initialValues?.start_time).minute)
 
+  const hasInvalidProgram = programs.some(
+    (program) => !program.title.trim() || (!program.composer_id && !program.composer_free_text?.trim())
+  )
+  const programValidationError = hasInvalidProgram
+    ? '各プログラムに曲名と作曲家を入力してください。'
+    : null
+
   const addProgram = () => {
-    setPrograms((current) => [...current, { ...EMPTY_PROGRAM, order_no: current.length + 1 }])
+    setPrograms((current) => [
+      ...current,
+      { ...EMPTY_PROGRAM, order_no: current.length + 1, clientId: createProgramClientId() },
+    ])
   }
 
-  const removeProgram = (index: number) => {
-    setPrograms((current) => renumberPrograms(current.filter((_, currentIndex) => currentIndex !== index)))
+  const removeProgram = (programId: string) => {
+    setPrograms((current) => renumberPrograms(current.filter((program) => program.clientId !== programId)))
   }
 
-  const updateProgram = (index: number, key: keyof ProgramInput, value: string) => {
-    setPrograms((current) => updateProgramAt(current, index, (program) => ({ ...program, [key]: value })))
+  const updateProgram = (programId: string, key: keyof ProgramInput, value: string) => {
+    setPrograms((current) => updateProgramById(current, programId, (program) => ({ ...program, [key]: value })))
   }
 
-  const updateProgramComposer = (index: number, value: string) => {
+  const updateProgramComposer = (programId: string, value: string) => {
     setPrograms((current) =>
-      updateProgramAt(current, index, (program) => normalizeProgramComposer(program, composerOptions, value))
+      updateProgramById(current, programId, (program) => normalizeProgramComposer(program, composerOptions, value))
     )
   }
 
@@ -329,7 +367,7 @@ export default function ConcertForm({
         </div>
 
         {programs.map((program, index) => (
-          <div key={index} className="rounded-3xl border border-[var(--line)] bg-white/88 p-5 md:p-6">
+          <div key={program.clientId} className="rounded-3xl border border-[var(--line)] bg-white/88 p-5 md:p-6">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--accent)]">
               プログラム {index + 1}
             </div>
@@ -339,7 +377,7 @@ export default function ConcertForm({
                 <label className="label-text">曲名</label>
                 <input
                   value={program.title}
-                  onChange={(event) => updateProgram(index, 'title', event.target.value)}
+                  onChange={(event) => updateProgram(program.clientId, 'title', event.target.value)}
                   className="field"
                 />
               </div>
@@ -348,7 +386,7 @@ export default function ConcertForm({
                 <label className="label-text">作曲家</label>
                 <input
                   value={getComposerInputValue(program)}
-                  onChange={(event) => updateProgramComposer(index, event.target.value)}
+                  onChange={(event) => updateProgramComposer(program.clientId, event.target.value)}
                   list={COMPOSER_DATALIST_ID}
                   className="field"
                   placeholder="作曲家名を入力または選択"
@@ -359,24 +397,35 @@ export default function ConcertForm({
                 <label className="label-text">ソリスト（任意）</label>
                 <input
                   value={program.soloist ?? ''}
-                  onChange={(event) => updateProgram(index, 'soloist', event.target.value)}
+                  onChange={(event) => updateProgram(program.clientId, 'soloist', event.target.value)}
                   className="field"
                   placeholder="例: Vn. 山田 花子"
                 />
               </div>
 
-              <button type="button" onClick={() => removeProgram(index)} className="secondary-button">
+              <button
+                type="button"
+                onClick={() => removeProgram(program.clientId)}
+                className="secondary-button"
+                disabled={programs.length === 1}
+              >
                 削除
               </button>
             </div>
           </div>
         ))}
+
+        {programValidationError && <AlertMessage>{programValidationError}</AlertMessage>}
       </section>
 
-      <input type="hidden" name="programs" value={JSON.stringify(programs)} readOnly />
+      <input type="hidden" name="programs" value={JSON.stringify(programs.map(toProgramInput))} readOnly />
 
       <div className="flex justify-end pt-2">
-        <button type="submit" disabled={isPending} className="primary-button min-w-44 disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={isPending || Boolean(programValidationError)}
+          className="primary-button min-w-44 disabled:opacity-60"
+        >
           {isPending ? pendingLabel : submitLabel}
         </button>
       </div>
