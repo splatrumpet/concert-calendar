@@ -25,6 +25,7 @@ const EMPTY_PROGRAM: ProgramInput = {
   composer_id: '',
   composer_label: '',
   composer_free_text: '',
+  soloist: '',
   order_no: 1,
 }
 
@@ -41,12 +42,51 @@ function normalizePrograms(programs?: ProgramInput[]): ProgramInput[] {
     composer_id: program.composer_id ?? '',
     composer_label: program.composer_label ?? '',
     composer_free_text: program.composer_free_text ?? '',
+    soloist: program.soloist ?? '',
     order_no: index + 1,
   }))
 }
 
 function getComposerInputValue(program: ProgramInput): string {
   return program.composer_id ? program.composer_label ?? '' : program.composer_free_text ?? ''
+}
+
+
+function normalizeProgramComposer(program: ProgramInput, composerOptions: ComposerRecord[], value: string): ProgramInput {
+  const matchedComposer = findComposerOption(composerOptions, value)
+
+  if (!value.trim()) {
+    return {
+      ...program,
+      composer_id: '',
+      composer_label: '',
+      composer_free_text: '',
+    }
+  }
+
+  if (matchedComposer) {
+    return {
+      ...program,
+      composer_id: String(matchedComposer.id),
+      composer_label: matchedComposer.display_name,
+      composer_free_text: '',
+    }
+  }
+
+  return {
+    ...program,
+    composer_id: '',
+    composer_label: '',
+    composer_free_text: value,
+  }
+}
+
+function updateProgramAt(programs: ProgramInput[], index: number, updater: (program: ProgramInput) => ProgramInput) {
+  return programs.map((program, currentIndex) => (currentIndex === index ? updater(program) : program))
+}
+
+function renumberPrograms(programs: ProgramInput[]): ProgramInput[] {
+  return programs.map((program, index) => ({ ...program, order_no: index + 1 }))
 }
 
 function findComposerOption(composerOptions: ComposerRecord[], value: string): ComposerRecord | undefined {
@@ -94,55 +134,16 @@ export default function ConcertForm({
   }
 
   const removeProgram = (index: number) => {
-    setPrograms((current) =>
-      current
-        .filter((_, currentIndex) => currentIndex !== index)
-        .map((program, currentIndex) => ({ ...program, order_no: currentIndex + 1 }))
-    )
+    setPrograms((current) => renumberPrograms(current.filter((_, currentIndex) => currentIndex !== index)))
   }
 
   const updateProgram = (index: number, key: keyof ProgramInput, value: string) => {
-    setPrograms((current) =>
-      current.map((program, currentIndex) =>
-        currentIndex === index ? { ...program, [key]: value } : program
-      )
-    )
+    setPrograms((current) => updateProgramAt(current, index, (program) => ({ ...program, [key]: value })))
   }
 
   const updateProgramComposer = (index: number, value: string) => {
-    const matchedComposer = findComposerOption(composerOptions, value)
-
     setPrograms((current) =>
-      current.map((program, currentIndex) => {
-        if (currentIndex !== index) {
-          return program
-        }
-
-        if (!value.trim()) {
-          return {
-            ...program,
-            composer_id: '',
-            composer_label: '',
-            composer_free_text: '',
-          }
-        }
-
-        if (matchedComposer) {
-          return {
-            ...program,
-            composer_id: String(matchedComposer.id),
-            composer_label: matchedComposer.display_name,
-            composer_free_text: '',
-          }
-        }
-
-        return {
-          ...program,
-          composer_id: '',
-          composer_label: '',
-          composer_free_text: value,
-        }
-      })
+      updateProgramAt(current, index, (program) => normalizeProgramComposer(program, composerOptions, value))
     )
   }
 
@@ -182,6 +183,11 @@ export default function ConcertForm({
             required
             className="field"
           />
+        </div>
+
+        <div>
+          <label className="label-text">指揮者</label>
+          <input name="conductor" defaultValue={initialValues?.conductor ?? ''} className="field" />
         </div>
 
         <div>
@@ -328,7 +334,7 @@ export default function ConcertForm({
               プログラム {index + 1}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[1.4fr_1fr_auto] md:items-end">
+            <div className="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
               <div>
                 <label className="label-text">曲名</label>
                 <input
@@ -346,6 +352,16 @@ export default function ConcertForm({
                   list={COMPOSER_DATALIST_ID}
                   className="field"
                   placeholder="作曲家名を入力または選択"
+                />
+              </div>
+
+              <div>
+                <label className="label-text">ソリスト（任意）</label>
+                <input
+                  value={program.soloist ?? ''}
+                  onChange={(event) => updateProgram(index, 'soloist', event.target.value)}
+                  className="field"
+                  placeholder="例: Vn. 山田 花子"
                 />
               </div>
 

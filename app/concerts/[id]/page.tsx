@@ -8,6 +8,29 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
+type DetailCardProps = {
+  label: string
+  value: string
+  className?: string
+}
+
+function formatDisplayTime(value: string | null): string {
+  if (!value) {
+    return '未設定'
+  }
+
+  return value.slice(0, 5)
+}
+
+function DetailCard({ label, value, className = '' }: DetailCardProps) {
+  return (
+    <div className={`rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm ${className}`}>
+      <div className="text-xs font-semibold tracking-[0.12em] text-[color:var(--accent)]">{label}</div>
+      <div className="mt-2 text-base font-semibold leading-7 text-slate-900 md:text-[1.02rem]">{value}</div>
+    </div>
+  )
+}
+
 export default async function ConcertDetailPage({ params }: Props) {
   const { id } = await params
   const [{ user }, concert] = await Promise.all([getCurrentUser(), fetchConcertById(id)])
@@ -18,14 +41,6 @@ export default async function ConcertDetailPage({ params }: Props) {
 
   const programs = sortPrograms(concert.programs)
   const isOwner = user?.id === concert.created_by
-  const detailItems = [
-    { label: '日付', value: concert.event_date },
-    { label: '主催者', value: concert.organization_name },
-    { label: '開場時間', value: concert.open_time || '未設定' },
-    { label: '開演時間', value: concert.start_time },
-    { label: '都道府県', value: concert.prefecture },
-    { label: '会場', value: concert.venue },
-  ]
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 md:space-y-7">
@@ -55,20 +70,22 @@ export default async function ConcertDetailPage({ params }: Props) {
           )}
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {detailItems.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-3xl border border-[var(--line)] bg-white/88 px-5 py-4 shadow-sm"
-            >
-              <div className="text-xs font-semibold tracking-[0.12em] text-[color:var(--accent)]">
-                {item.label}
-              </div>
-              <div className="mt-2 text-base font-semibold leading-7 text-slate-900 md:text-[1.02rem]">
-                {item.value}
-              </div>
-            </div>
-          ))}
+        <div className="mt-6 space-y-4">
+          <div className="grid gap-3 md:grid-cols-4">
+            <DetailCard label="日付" value={concert.event_date} className="md:col-span-2" />
+            <DetailCard label="開場時間" value={formatDisplayTime(concert.open_time)} />
+            <DetailCard label="開演時間" value={formatDisplayTime(concert.start_time)} />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <DetailCard label="主催者" value={concert.organization_name} />
+            <DetailCard label="指揮者" value={concert.conductor || '未設定'} />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <DetailCard label="都道府県" value={concert.prefecture} />
+            <DetailCard label="会場" value={concert.venue} />
+          </div>
         </div>
       </section>
 
@@ -89,6 +106,11 @@ export default async function ConcertDetailPage({ params }: Props) {
                 <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
                   {getProgramComposerName(program)}
                 </div>
+                {program.soloist && (
+                  <div className="mt-1 text-sm font-medium leading-6 text-slate-600 md:text-[0.96rem]">
+                    ソリスト: {program.soloist}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
