@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# concert-calender
 
-## Getting Started
+Supabase をバックエンドに使ったコンサート情報アプリです。公開ページでは一覧検索とカレンダー閲覧ができ、ログインユーザーは自分のコンサートを登録、編集、削除できます。
 
-First, run the development server:
+## Features
+
+- 当日公演の表示
+- 公演一覧の検索
+- 月間カレンダー表示
+- メールアドレス + パスワード認証
+- 公演と演目の登録、更新、削除
+- 公演更新時の `concerts` / `programs` 全置換をトランザクション化した RPC
+
+検索条件:
+
+- 日付
+- 都道府県
+- 曲名
+- 作曲家
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Supabase SSR
+- Supabase Auth / Postgres
+- ESLint
+
+## Prerequisites
+
+- Node.js 20 以上
+- npm
+- Supabase プロジェクト
+
+## Setup
+
+1. 依存関係をインストールします。
+
+```bash
+npm ci
+```
+
+2. ルートに `.env.local` を作成し、以下を設定します。
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+3. 既存の Supabase スキーマに対して、必要な SQL を `supabase/` から適用します。
+
+推奨順:
+
+```text
+supabase/composer_hybrid.sql
+supabase/add_open_time.sql
+supabase/add_conductor_and_soloist.sql
+supabase/rls_policies.sql
+supabase/update_concert_transaction.sql
+```
+
+補足:
+
+- このリポジトリには `concerts` / `programs` の初期作成 SQL は含まれていません。
+- `supabase/seed_test_data.sql` はテストデータ投入用です。
+
+4. 開発サーバーを起動します。
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで `http://localhost:3000` を開いて動作確認します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## npm scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev        # 開発サーバー
+npm run build      # 本番ビルド
+npm run start      # 本番ビルドを起動
+npm run lint       # ESLint
+npm run lint:fix   # ESLint 自動修正
+npm run typecheck  # TypeScript 型チェック
+npm run check      # lint + typecheck
+```
 
-## Learn More
+## Application Notes
 
-To learn more about Next.js, take a look at the following resources:
+- 認証が必要な画面は `/concerts/new`、`/concerts/[id]/edit`、`/mypage` です。
+- 公演更新は Supabase 関数 `replace_concert_and_programs` を通して実行されます。
+- RLS により、作成者本人のみが自分の公演と紐づく演目を更新、削除できます。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Directory Guide
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+app/        Next.js App Router
+lib/        Supabase client, auth, date/search helpers
+supabase/   適用用 SQL
+types/      ドメイン型定義
+```

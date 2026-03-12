@@ -16,6 +16,14 @@ export type ConcertFormState = {
   error: string | null
 }
 
+type ProgramMutationInput = {
+  title: string
+  composer_id: number | null
+  composer_free_text: string | null
+  soloist: string | null
+  order_no: number
+}
+
 const CONCERT_PATHS = ['/', '/concerts', '/concerts/calendar', '/mypage'] as const
 const DEFAULT_ERROR_MESSAGE = '保存に失敗しました。時間をおいて再度お試しください。'
 const REQUIRED_FIELDS: Array<keyof ConcertInput> = [
@@ -215,26 +223,48 @@ function revalidateConcertPaths(concertId: string) {
   revalidatePath(`/concerts/${concertId}/edit`)
 }
 
-async function replacePrograms(
+function buildProgramMutationInput(programs: ProgramInput[]): ProgramMutationInput[] {
+  return programs.map((program, index) => ({
+    title: program.title,
+    composer_id: program.composer_id ? Number(program.composer_id) : null,
+    composer_free_text: program.composer_id ? null : program.composer_free_text ?? null,
+    soloist: program.soloist ?? null,
+    order_no: program.order_no || index + 1,
+  }))
+}
+
+async function replaceConcertAndPrograms(
   supabase: Awaited<ReturnType<typeof createClient>>,
   concertId: string,
-  programs: ProgramInput[]
+  userId: string,
+  payload: ConcertPayload
 ) {
-  const { error: deleteProgramsError } = await supabase
-    .from('programs')
-    .delete()
-    .eq('concert_id', concertId)
+  const concert = buildConcertMutation(payload)
+  const programs = buildProgramMutationInput(payload.programs)
 
-  if (deleteProgramsError) {
-    throw new Error(deleteProgramsError.message)
+  const { data, error } = await supabase.rpc('replace_concert_and_programs', {
+    p_concert_id: Number(concertId),
+    p_user_id: userId,
+    p_title: concert.title,
+    p_event_date: concert.event_date,
+    p_open_time: concert.open_time,
+    p_start_time: concert.start_time,
+    p_conductor: concert.conductor,
+    p_prefecture: concert.prefecture,
+    p_venue: concert.venue,
+    p_organization_name: concert.organization_name,
+    p_flyer_image_url: concert.flyer_image_url,
+    p_official_url: concert.official_url,
+    p_note: concert.note,
+    p_programs: programs,
+  })
+
+  if (error) {
+    throw new Error(error.message)
   }
 
-  const { error: insertProgramsError } = await supabase
-    .from('programs')
-    .insert(buildProgramRows(concertId, programs))
-
-  if (insertProgramsError) {
-    throw new Error(insertProgramsError.message)
+  if (data !== true) {
+    throw new Error('コンサート更新に失敗しました。')
   }
 }
 
@@ -290,16 +320,7 @@ export async function updateConcertAction(
     await assertComposerIdsExist(supabase, payload.programs)
     await assertOwner(supabase, payload.id, userId)
 
-    const { error: updateError } = await supabase
-      .from('concerts')
-      .update(buildConcertMutation(payload))
-      .eq('id', payload.id)
-
-    if (updateError) {
-      throw new Error(updateError.message)
-    }
-
-    await replacePrograms(supabase, payload.id, payload.programs)
+    await replaceConcertAndPrograms(supabase, payload.id, userId, payload)
 
     revalidateConcertPaths(payload.id)
     redirect(`/concerts/${payload.id}`)
