@@ -54,6 +54,27 @@ function findComposerOption(composerOptions: ComposerRecord[], value: string): C
   return composerOptions.find((composer) => normalizeSearchText(composer.display_name) === normalizedValue)
 }
 
+const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'))
+const MINUTES = Array.from({ length: 12 }, (_, index) => String(index * 5).padStart(2, '0'))
+
+function getTimeParts(value?: string | null): { hour: string; minute: string } {
+  if (!value) {
+    return { hour: '', minute: '' }
+  }
+
+  const [hour = '', minute = ''] = value.slice(0, 5).split(':')
+
+  if (!HOURS.includes(hour) || !MINUTES.includes(minute)) {
+    return { hour: '', minute: '' }
+  }
+
+  return { hour, minute }
+}
+
+function toTimeValue(hour: string, minute: string): string {
+  return hour && minute ? `${hour}:${minute}` : ''
+}
+
 export default function ConcertForm({
   action,
   submitLabel,
@@ -63,6 +84,10 @@ export default function ConcertForm({
 }: Props) {
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE)
   const [programs, setPrograms] = useState<ProgramInput[]>(normalizePrograms(initialValues?.programs))
+  const [openTimeHour, setOpenTimeHour] = useState(getTimeParts(initialValues?.open_time).hour)
+  const [openTimeMinute, setOpenTimeMinute] = useState(getTimeParts(initialValues?.open_time).minute)
+  const [startTimeHour, setStartTimeHour] = useState(getTimeParts(initialValues?.start_time).hour)
+  const [startTimeMinute, setStartTimeMinute] = useState(getTimeParts(initialValues?.start_time).minute)
 
   const addProgram = () => {
     setPrograms((current) => [...current, { ...EMPTY_PROGRAM, order_no: current.length + 1 }])
@@ -161,25 +186,72 @@ export default function ConcertForm({
 
         <div>
           <label className="label-text">開場時間</label>
-          <input
-            name="open_time"
-            type="time"
-            defaultValue={initialValues?.open_time ?? ''}
-            step={300}
-            className="field"
-          />
+          <div className="time-field-wrap">
+            <select
+              value={openTimeHour}
+              onChange={(event) => setOpenTimeHour(event.target.value)}
+              className="select-field"
+              aria-label="開場時間（時）"
+            >
+              <option value="">時</option>
+              {HOURS.map((hour) => (
+                <option key={hour} value={hour}>
+                  {hour}
+                </option>
+              ))}
+            </select>
+            <span className="time-separator">:</span>
+            <select
+              value={openTimeMinute}
+              onChange={(event) => setOpenTimeMinute(event.target.value)}
+              className="select-field"
+              aria-label="開場時間（分）"
+            >
+              <option value="">分</option>
+              {MINUTES.map((minute) => (
+                <option key={minute} value={minute}>
+                  {minute}
+                </option>
+              ))}
+            </select>
+          </div>
+          <input type="hidden" name="open_time" value={toTimeValue(openTimeHour, openTimeMinute)} readOnly />
         </div>
 
         <div>
           <label className="label-text">開演時間</label>
-          <input
-            name="start_time"
-            type="time"
-            defaultValue={initialValues?.start_time ?? ''}
-            step={300}
-            required
-            className="field"
-          />
+          <div className="time-field-wrap">
+            <select
+              value={startTimeHour}
+              onChange={(event) => setStartTimeHour(event.target.value)}
+              className="select-field"
+              aria-label="開演時間（時）"
+              required
+            >
+              <option value="">時</option>
+              {HOURS.map((hour) => (
+                <option key={hour} value={hour}>
+                  {hour}
+                </option>
+              ))}
+            </select>
+            <span className="time-separator">:</span>
+            <select
+              value={startTimeMinute}
+              onChange={(event) => setStartTimeMinute(event.target.value)}
+              className="select-field"
+              aria-label="開演時間（分）"
+              required
+            >
+              <option value="">分</option>
+              {MINUTES.map((minute) => (
+                <option key={minute} value={minute}>
+                  {minute}
+                </option>
+              ))}
+            </select>
+          </div>
+          <input type="hidden" name="start_time" value={toTimeValue(startTimeHour, startTimeMinute)} readOnly />
         </div>
 
         <div>
