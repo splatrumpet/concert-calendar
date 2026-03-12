@@ -7,6 +7,7 @@ type Props = {
   composer?: string
   action?: string
   submitLabel?: string
+  formClassName?: string
 }
 
 export default function ConcertSearchForm({
@@ -16,9 +17,10 @@ export default function ConcertSearchForm({
   composer,
   action = '/concerts',
   submitLabel = '検索',
+  formClassName = 'grid gap-3 md:grid-cols-5',
 }: Props) {
   return (
-    <form action={action} method="get" className="grid gap-3 md:grid-cols-5">
+    <form action={action} method="get" className={formClassName}>
       <input
         type="date"
         name="event_date"
