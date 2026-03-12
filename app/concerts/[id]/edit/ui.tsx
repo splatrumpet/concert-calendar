@@ -18,6 +18,7 @@ export default async function ConcertEditForm({ concert }: { concert: ConcertRec
         event_date: concert.event_date,
         open_time: concert.open_time,
         start_time: concert.start_time,
+        conductor: concert.conductor,
         prefecture: concert.prefecture,
         venue: concert.venue,
         organization_name: concert.organization_name,
@@ -29,6 +30,7 @@ export default async function ConcertEditForm({ concert }: { concert: ConcertRec
           composer_id: program.composer_id ? String(program.composer_id) : '',
           composer_label: program.composer?.display_name ?? '',
           composer_free_text: program.composer_id ? '' : getProgramComposerName(program),
+          soloist: program.soloist ?? '',
           order_no: index + 1,
         })),
       }}
