@@ -234,3 +234,23 @@ textarea {
     linear-gradient(90deg, rgba(20, 57, 111, 0.035) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+
+.time-field-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.time-field-wrap .select-field {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.time-separator {
+  color: var(--primary-strong);
+  font-weight: 700;
+  opacity: 0.75;
+}
