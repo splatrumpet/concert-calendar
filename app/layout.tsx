@@ -26,9 +26,7 @@ export default async function RootLayout({
                 <Link href="/" className="text-2xl font-bold tracking-[-0.05em] text-[var(--primary-strong)]">
                   Concert Calendar
                 </Link>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">
-                  静かな白の余白で、演奏会の情報を美しく見渡すためのカレンダー。
-                </p>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">演奏会の情報を見渡せるカレンダー。</p>
               </div>
 
               <nav className="flex flex-wrap items-center gap-2 text-sm md:justify-end">

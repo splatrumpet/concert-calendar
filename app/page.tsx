@@ -26,12 +26,10 @@ export default async function HomePage() {
             <div className="max-w-3xl">
               <span className="eyebrow">Curated Today</span>
               <h1 className="mt-5 max-w-3xl text-[2.8rem] font-bold leading-[0.98] tracking-[-0.075em] md:text-[5.6rem]">
-                今日の演奏会を、
-                <br />
-                静かに美しく探す。
+                今日の演奏会が見つかる。
               </h1>
               <p className="mt-5 max-w-2xl text-[0.98rem] leading-8 text-blue-50/86 md:text-[1.08rem]">
-                白を基調に、濃い青で輪郭を整えた演奏会カレンダー。開催日、地域、曲目から、気になる公演へ上品にたどり着けます。
+                開催日・地域・曲目から、気になる演奏会を探せるカレンダーアプリです。
               </p>
             </div>
 
