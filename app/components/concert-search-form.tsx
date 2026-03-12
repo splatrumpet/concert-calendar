@@ -4,6 +4,7 @@ type Props = {
   eventDate?: string
   prefecture?: string
   program?: string
+  composer?: string
   action?: string
   submitLabel?: string
 }
@@ -12,11 +13,12 @@ export default function ConcertSearchForm({
   eventDate,
   prefecture,
   program,
+  composer,
   action = '/concerts',
   submitLabel = '検索',
 }: Props) {
   return (
-    <form action={action} method="get" className="grid gap-3 md:grid-cols-4">
+    <form action={action} method="get" className="grid gap-3 md:grid-cols-5">
       <input
         type="date"
         name="event_date"
@@ -42,6 +44,13 @@ export default function ConcertSearchForm({
         name="program"
         defaultValue={program}
         placeholder="曲目"
+        className="field"
+      />
+      <input
+        type="text"
+        name="composer"
+        defaultValue={composer}
+        placeholder="作曲家"
         className="field"
       />
       <button type="submit" className="primary-button">

@@ -125,20 +125,42 @@ export async function fetchConcertById(id: string): Promise<ConcertRecord | null
   }
 }
 
-export async function fetchConcertIdsByProgram(program?: string): Promise<number[] | null> {
-  if (!program) {
+export async function fetchConcertIdsByProgramOrComposer(filters: {
+  program?: string
+  composer?: string
+}): Promise<number[] | null> {
+  const { program, composer } = filters
+
+  if (!program && !composer) {
     return null
   }
 
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('programs')
-    .select('concert_id')
-    .ilike('title', `%${program}%`)
+
+  let query = supabase.from('programs').select('concert_id, composer_free_text, composer:composers!programs_composer_id_fkey(display_name)')
+
+  if (program) {
+    query = query.ilike('title', `%${program}%`)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw new Error('プログラム検索に失敗しました。')
   }
 
-  return [...new Set((data ?? []).map((row) => row.concert_id))]
+  const normalizedComposer = composer?.trim().toLowerCase()
+
+  const matchedRows = (data ?? []).filter((row) => {
+    if (!normalizedComposer) {
+      return true
+    }
+
+    const composerRecord = Array.isArray(row.composer) ? row.composer[0] : row.composer
+    const composerName = composerRecord?.display_name ?? row.composer_free_text ?? ''
+
+    return composerName.toLowerCase().includes(normalizedComposer)
+  })
+
+  return [...new Set(matchedRows.map((row) => row.concert_id))]
 }
