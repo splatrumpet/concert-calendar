@@ -248,9 +248,28 @@ textarea {
     inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
+input[type="date"].field {
+  padding-right: 2.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="date"].field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.82;
+  padding: 0.24rem;
+  border-radius: 9999px;
+  background-color: rgba(20, 57, 111, 0.08);
+}
+
+input[type="date"].field:hover::-webkit-calendar-picker-indicator,
+input[type="date"].field:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  background-color: rgba(20, 57, 111, 0.16);
+}
+
 .select-field {
   appearance: none;
-  padding-right: 2.35rem;
+  padding-inline: 1rem;
   border-color: rgba(20, 57, 111, 0.22);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(241, 246, 255, 0.96) 100%),
