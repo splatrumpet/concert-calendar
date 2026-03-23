@@ -248,6 +248,32 @@ textarea {
     inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
+.select-field {
+  appearance: none;
+  padding-right: 2.35rem;
+  border-color: rgba(20, 57, 111, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(241, 246, 255, 0.96) 100%),
+    linear-gradient(45deg, transparent 50%, rgba(20, 57, 111, 0.74) 50%),
+    linear-gradient(135deg, rgba(20, 57, 111, 0.74) 50%, transparent 50%);
+  background-position:
+    0 0,
+    calc(100% - 1rem) calc(50% + 0.12rem),
+    calc(100% - 0.73rem) calc(50% + 0.12rem);
+  background-size:
+    100% 100%,
+    0.38rem 0.38rem,
+    0.38rem 0.38rem;
+  background-repeat: no-repeat;
+}
+
+.select-field:hover {
+  border-color: rgba(20, 57, 111, 0.34);
+  box-shadow:
+    0 0 0 3px rgba(20, 57, 111, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
 .surface-grid {
   background-image:
     linear-gradient(rgba(20, 57, 111, 0.035) 1px, transparent 1px),
@@ -264,9 +290,11 @@ textarea {
 }
 
 .time-field-wrap .select-field {
+  min-width: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .time-separator {
